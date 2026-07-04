@@ -21,7 +21,7 @@ export interface Task {
     description:string,
     status:ColumnId,
     assignee?:Assignee,
-    lables:Label[],
+    labels:Label[],
     priority: Priority,
     dueDate?:string ;
 
