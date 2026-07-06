@@ -6,7 +6,7 @@ export const initialBoardData: BoardData = {
     { id: 'Todo', title: 'Todo' },
     { id: 'In Progress', title: 'In Progress' },
     { id: 'Review', title: 'Review' },
-    { id: 'Todo', title: 'Done' },
+    { id: 'Done', title: 'Done' },
   ],
   tasks: [
     {

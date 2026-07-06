@@ -3,7 +3,7 @@ import { Navigation } from './Navigation';
 
 export function Sidebar() {
   return (
-    <aside className="flex flex-col w-[220px] h-full shrink-0 bg-gray-50 border-r border-gray-200">
+    <aside className="flex flex-col w-[220px] h-full shrink-0 bg-background border-r border-outline">
       <Logo />
       <Navigation />
     </aside>

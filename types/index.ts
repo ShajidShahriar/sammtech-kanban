@@ -1,5 +1,5 @@
 export type Priority  = 'High' | 'Medium' | 'Low'
-export type ColumnId = 'Backlog' | 'Todo' | 'In Progress' | 'Review'
+export type ColumnId = string;
 
 export interface Label {
     id:string,
