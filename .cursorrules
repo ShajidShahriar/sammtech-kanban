@@ -1,6 +1,0 @@
-- Never write raw utility strings for cards, buttons, or inputs.
-  Use the existing components in /components/ui/
-- Shared styles (border, radius, shadow, base padding) live in the component definition.
-- Layout-specific styles (gap, flex direction, width) go in className props at call site, using cn().
-- New reusable patterns get extracted into /components/ui/ immediately, not inlined.
-- Follow existing token names in globals.css — don't invent new colors/spacing values.
