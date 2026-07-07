@@ -4,9 +4,14 @@ import React from 'react';
 import { Column } from './Column';
 import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { useKanbanBoard } from '@/hooks/useKanbanBoard';
+import { TaskSidebar } from './TaskSidebar';
 
 export function Board() {
-  const { board, updateBoard, isLoaded } = useKanbanBoard();
+  const { 
+    board, updateBoard, isLoaded, 
+    isSidebarOpen, setIsSidebarOpen, 
+    editingTaskId, addTask, updateTask, deleteTask 
+  } = useKanbanBoard();
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;
@@ -47,21 +52,39 @@ export function Board() {
     return null;
   }
 
+  const editingTask = editingTaskId ? board.tasks.find(t => t.id === editingTaskId) : undefined;
+
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex-1 overflow-x-auto overflow-y-hidden p-6 h-full flex items-start gap-6">
-        {board.columns.map(col => {
-          const columnTasks = board.tasks.filter(task => task.status === col.id);
-          return (
-            <Column
-              key={col.id}
-              id={col.id}
-              title={col.title}
-              tasks={columnTasks}
-            />
-          );
-        })}
-      </div>
-    </DragDropContext>
+    <>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div className="flex-1 overflow-x-auto overflow-y-hidden p-6 h-full flex items-start gap-6">
+          {board.columns.map(col => {
+            const columnTasks = board.tasks.filter(task => task.status === col.id);
+            return (
+              <Column
+                key={col.id}
+                id={col.id}
+                title={col.title}
+                tasks={columnTasks}
+              />
+            );
+          })}
+        </div>
+      </DragDropContext>
+
+      <TaskSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        initialData={editingTask}
+        onSave={(task) => {
+          if (editingTask) {
+            updateTask(task.id, task);
+          } else {
+            addTask(task);
+          }
+        }}
+        onDelete={deleteTask}
+      />
+    </>
   );
 }

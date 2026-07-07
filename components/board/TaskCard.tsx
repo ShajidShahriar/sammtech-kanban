@@ -3,6 +3,7 @@ import { Card, CardHeader, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Clock } from 'lucide-react';
 import { Draggable } from '@hello-pangea/dnd';
+import { useKanbanBoard } from '@/hooks/useKanbanBoard';
 
 interface TaskCardProps {
   task: Task;
@@ -10,6 +11,8 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, index }: TaskCardProps) {
+  const { setEditingTaskId, setIsSidebarOpen } = useKanbanBoard();
+
   const priorityVariant = {
     High: 'danger',
     Medium: 'warning',
@@ -24,8 +27,12 @@ export function TaskCard({ task, index }: TaskCardProps) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           style={{ ...provided.draggableProps.style, opacity: snapshot.isDragging ? 0.8 : 1 }}
+          onClick={() => {
+            setEditingTaskId(task.id);
+            setIsSidebarOpen(true);
+          }}
         >
-          <Card className="cursor-grab active:cursor-grabbing hover:border-primary/50 group">
+          <Card className="cursor-grab active:cursor-grabbing hover:border-primary/50 group hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-col space-y-2 p-3 pb-2">
               <div className="flex items-start justify-between gap-2">
                 <h4 className="font-semibold text-sm leading-tight text-foreground">{task.title}</h4>
