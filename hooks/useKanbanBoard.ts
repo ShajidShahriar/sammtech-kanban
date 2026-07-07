@@ -13,11 +13,22 @@ interface KanbanContextType {
   addTask: (task: Task) => void;
   updateTask: (taskId: string, updates: Partial<Task>) => void;
   deleteTask: (taskId: string) => void;
+  addColumn: (title: string) => void;
+  updateColumn: (columnId: string, title: string) => void;
+  deleteColumn: (columnId: string) => void;
   // UI state for sidebar
-  isSidebarOpen: boolean;
-  setIsSidebarOpen: (isOpen: boolean) => void;
+  isModalOpen: boolean;
+  setIsModalOpen: (isOpen: boolean) => void;
   editingTaskId: string | null;
   setEditingTaskId: (id: string | null) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  assigneeFilter: string;
+  setAssigneeFilter: (id: string) => void;
+  priorityFilter: string;
+  setPriorityFilter: (priority: string) => void;
+  labelFilter: string;
+  setLabelFilter: (id: string) => void;
 }
 
 const KanbanContext = createContext<KanbanContextType | undefined>(undefined);
@@ -27,8 +38,13 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
   
   // Sidebar state
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [assigneeFilter, setAssigneeFilter] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('');
+  const [labelFilter, setLabelFilter] = useState('');
 
   useEffect(() => {
     try {
@@ -77,12 +93,39 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
+  const addColumn = (title: string) => {
+    const newColumn = { id: `col-${Date.now()}`, title };
+    setBoard(prev => ({
+      ...prev,
+      columns: [...prev.columns, newColumn]
+    }));
+  };
+
+  const updateColumn = (columnId: string, title: string) => {
+    setBoard(prev => ({
+      ...prev,
+      columns: prev.columns.map(c => c.id === columnId ? { ...c, title } : c)
+    }));
+  };
+
+  const deleteColumn = (columnId: string) => {
+    setBoard(prev => ({
+      ...prev,
+      columns: prev.columns.filter(c => c.id !== columnId),
+      // Option A: Delete all tasks associated with this column
+      tasks: prev.tasks.filter(t => t.status !== columnId)
+    }));
+  };
+
   return React.createElement(
     KanbanContext.Provider,
     {
       value: { 
         board, updateBoard, addTask, updateTask, deleteTask, isLoaded,
-        isSidebarOpen, setIsSidebarOpen, editingTaskId, setEditingTaskId
+        addColumn, updateColumn, deleteColumn,
+        isModalOpen, setIsModalOpen, editingTaskId, setEditingTaskId,
+        searchQuery, setSearchQuery, assigneeFilter, setAssigneeFilter,
+        priorityFilter, setPriorityFilter, labelFilter, setLabelFilter
       }
     },
     children

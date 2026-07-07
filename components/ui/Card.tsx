@@ -4,17 +4,24 @@ import { cn } from '@/lib/utils';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function Card({ className, ...props }: CardProps) {
-  return (
-    <div
-      className={cn('bg-surface rounded-card border border-outline shadow-sm transition-all', className)}
-      {...props}
-    />
-  );
-}
+export const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <div
+        className={cn(
+          'rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0a0a0a] transition-colors duration-200',
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
+Card.displayName = 'Card';
 
 export function CardHeader({ className, ...props }: CardProps) {
-  return <div className={cn('flex flex-col space-y-1.5 p-4 pb-2', className)} {...props} />;
+  return <div className={cn('p-4 flex items-start justify-between', className)} {...props} />;
 }
 
 export function CardContent({ className, ...props }: CardProps) {

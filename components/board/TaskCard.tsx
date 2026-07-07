@@ -1,9 +1,14 @@
 import { Task } from '@/types';
 import { Card, CardHeader, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
-import { Clock } from 'lucide-react';
+import { Clock, MoreHorizontal } from 'lucide-react';
 import { Draggable } from '@hello-pangea/dnd';
 import { useKanbanBoard } from '@/hooks/useKanbanBoard';
+import { Avatar } from '../ui/Avatar';
+import { motion } from 'framer-motion';
+import { springTransition } from '@/lib/animations';
+
+const MotionCard = motion.create(Card);
 
 interface TaskCardProps {
   task: Task;
@@ -11,12 +16,12 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, index }: TaskCardProps) {
-  const { setEditingTaskId, setIsSidebarOpen } = useKanbanBoard();
+  const { setEditingTaskId, setIsModalOpen } = useKanbanBoard();
 
   const priorityVariant = {
     High: 'danger',
     Medium: 'warning',
-    Low: 'neutral',
+    Low: 'default',
   } as const;
 
   return (
@@ -29,37 +34,77 @@ export function TaskCard({ task, index }: TaskCardProps) {
           style={{ ...provided.draggableProps.style, opacity: snapshot.isDragging ? 0.8 : 1 }}
           onClick={() => {
             setEditingTaskId(task.id);
-            setIsSidebarOpen(true);
+            setIsModalOpen(true);
           }}
         >
-          <Card className="cursor-grab active:cursor-grabbing hover:border-primary/50 group hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-col space-y-2 p-3 pb-2">
-              <div className="flex items-start justify-between gap-2">
-                <h4 className="font-semibold text-sm leading-tight text-foreground">{task.title}</h4>
+          <MotionCard
+            layout={!snapshot.isDragging ? "position" : false}
+            layoutId={!snapshot.isDragging ? task.id : undefined}
+            transition={springTransition}
+            className="group cursor-grab active:cursor-grabbing hover:border-gray-300 dark:hover:border-white/30 transition-colors duration-200"
+            role="button"
+            tabIndex={0}
+            aria-label={`Task: ${task.title}, Status: ${task.status}, Priority: ${task.priority}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setEditingTaskId(task.id);
+                setIsModalOpen(true);
+              }
+            }}
+          >
+            <CardHeader className="p-4 flex items-start justify-between">
+              <div className="flex flex-col min-w-0">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                  {task.title}
+                </p>
               </div>
-              {task.labels && task.labels.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {task.labels.map(label => (
-                    <Badge key={label.id} variant="neutral" className={label.color}>
-                      {label.name}
-                    </Badge>
-                  ))}
-                </div>
-              )}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button 
+                  className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors opacity-0 group-hover:opacity-100"
+                  aria-label="More options"
+                >
+                  <MoreHorizontal className="w-4 h-4 shrink-0" />
+                </button>
+              </div>
             </CardHeader>
-            <CardContent className="p-3 pt-0 flex flex-col gap-3">
+            
+            {task.labels && task.labels.length > 0 && (
+              <div className="px-4 pb-3 flex flex-wrap gap-1">
+                {task.labels.map(label => (
+                  <Badge key={label.id} variant="default">
+                    {label.name}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            <CardContent className="px-4 pb-4 pt-0 flex flex-col gap-3">
+              {task.description && (
+                <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                  {task.description}
+                </p>
+              )}
               <div className="flex items-center justify-between mt-1">
                 <Badge variant={priorityVariant[task.priority]}>{task.priority}</Badge>
-                
-                {task.dueDate && (
-                  <div className="flex items-center text-xs text-foreground/60 font-medium">
-                    <Clock className="w-3 h-3 mr-1" />
-                    <span>{task.dueDate}</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  {task.dueDate && (
+                    <span className="flex items-center gap-1 text-xs text-gray-500 font-medium">
+                      <Clock className="w-3 h-3 shrink-0" />
+                      <span>{task.dueDate}</span>
+                    </span>
+                  )}
+                  {task.assignee && (
+                    <Avatar
+                      src={task.assignee.avatarUrl}
+                      alt={task.assignee.name}
+                      title={task.assignee.name}
+                    />
+                  )}
+                </div>
               </div>
             </CardContent>
-          </Card>
+          </MotionCard>
         </div>
       )}
     </Draggable>

@@ -1,37 +1,67 @@
 import { Task } from '@/types';
 import { TaskCard } from './TaskCard';
-import { Droppable } from '@hello-pangea/dnd';
+import { Droppable, Draggable } from '@hello-pangea/dnd';
+import { Edit2, Trash2 } from 'lucide-react';
+import { Button } from '../ui/Button';
+import { Badge } from '../ui/Badge';
+import { motion } from 'framer-motion';
 
 interface ColumnProps {
   id: string;
   title: string;
   tasks: Task[];
+  index: number;
+  onEdit: (id: string, title: string) => void;
+  onDelete: (id: string) => void;
 }
 
-export function Column({ id, title, tasks }: ColumnProps) {
+export function Column({ id, title, tasks, index, onEdit, onDelete }: ColumnProps) {
   return (
-    <div className="flex flex-col w-[320px] shrink-0 bg-surface-container rounded-card p-3 max-h-full">
-      <div className="flex items-center justify-between mb-4 px-1">
-        <h3 className="font-semibold text-sm text-foreground">{title}</h3>
-        <span className="text-xs font-medium text-foreground bg-surface-variant px-2 py-0.5 rounded-badge">
-          {tasks.length}
-        </span>
-      </div>
-      
-      <Droppable droppableId={id}>
-        {(provided, snapshot) => (
-          <div 
-            className={`flex flex-col gap-3 overflow-y-auto min-h-[150px] pb-2 rounded-lg transition-colors ${snapshot.isDraggingOver ? 'bg-black/5 dark:bg-white/5' : ''}`}
-            ref={provided.innerRef}
-            {...provided.droppableProps}
+    <Draggable draggableId={id} index={index}>
+      {(provided) => (
+        <div 
+          className="flex flex-col w-[320px] shrink-0 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-white/10 rounded-lg p-3 max-h-full"
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+        >
+          <motion.div 
+            layoutId={`column-${id}`}
+            className="flex items-center justify-between mb-4 px-1 group cursor-grab active:cursor-grabbing"
+            {...provided.dragHandleProps}
           >
-            {tasks.map((task, index) => (
-              <TaskCard key={task.id} task={task} index={index} />
-            ))}
-            {provided.placeholder}
-          </div>
-        )}
-      </Droppable>
-    </div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-sm text-gray-900 dark:text-white">{title}</h3>
+              <Badge variant="default" className="px-2 py-0.5">
+                {tasks.length}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button variant="ghost" size="tinyIcon" onClick={() => onEdit(id, title)} title="Edit Column" aria-label="Edit Column">
+                <Edit2 className="w-3 h-3 shrink-0" />
+              </Button>
+              <Button variant="ghost" size="tinyIcon" onClick={() => onDelete(id)} title="Delete Column" aria-label="Delete Column">
+                <Trash2 className="w-3 h-3 shrink-0 text-red-500 hover:text-red-600" />
+              </Button>
+            </div>
+          </motion.div>
+          
+          <Droppable droppableId={id} type="task">
+            {(provided, snapshot) => (
+              <div 
+                className={`flex flex-col gap-3 overflow-y-auto min-h-[150px] pb-2 rounded-lg transition-colors ${snapshot.isDraggingOver ? 'bg-black/5 dark:bg-white/5' : ''}`}
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+              >
+                {tasks.map((task, index) => (
+                  <TaskCard key={task.id} task={task} index={index} />
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </div>
+      )}
+    </Draggable>
   );
 }

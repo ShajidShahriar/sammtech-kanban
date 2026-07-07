@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Task, Priority, Label, Assignee } from '@/types';
-import { Drawer } from '../ui/Drawer';
+import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Select } from '../ui/Select';
 import { Button } from '../ui/Button';
-import { MarkdownRenderer } from '../ui/MarkdownRenderer';
+import { Badge } from '../ui/Badge';
+import { ToggleBadge } from '../ui/ToggleBadge';
+import { MarkdownBox } from '../ui/MarkdownBox';
 import { AVAILABLE_LABELS, DUMMY_USERS } from '@/lib/dummy-data';
 import { cn } from '@/lib/utils';
 
-interface TaskSidebarProps {
+interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: Task;
@@ -17,7 +19,7 @@ interface TaskSidebarProps {
   onDelete?: (taskId: string) => void;
 }
 
-export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: TaskSidebarProps) {
+export function TaskModal({ isOpen, onClose, initialData, onSave, onDelete }: TaskModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('Todo');
@@ -37,7 +39,7 @@ export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: 
         setPriority(initialData.priority);
         setDueDate(initialData.dueDate || '');
         setAssigneeId(initialData.assignee?.id || '');
-        setSelectedLabels(initialData.labels.map(l => l.id));
+        setSelectedLabels(initialData.labels?.map(l => l.id) || []);
       } else {
         setTitle('');
         setDescription('');
@@ -82,15 +84,16 @@ export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: 
   const isEditing = !!initialData;
 
   return (
-    <Drawer
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={isEditing ? 'Edit Task' : 'Create New Task'}
+      layoutId={isEditing ? initialData.id : 'new-task'}
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 h-full pb-8">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-foreground">Title</label>
+          <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Title</label>
           <Input 
             value={title} 
             onChange={(e) => setTitle(e.target.value)} 
@@ -102,19 +105,17 @@ export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: 
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-foreground">Description</label>
+            <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Description</label>
             <button 
               type="button" 
               onClick={() => setPreviewMode(!previewMode)}
-              className="text-xs text-primary font-medium hover:underline"
+              className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline"
             >
               {previewMode ? 'Edit Markdown' : 'Preview'}
             </button>
           </div>
           {previewMode ? (
-            <div className="min-h-32 p-3 border border-outline rounded-md bg-surface overflow-y-auto">
-              <MarkdownRenderer content={description || '*No description provided.*'} />
-            </div>
+            <MarkdownBox content={description || '*No description provided.*'} className="min-h-32" />
           ) : (
             <Textarea 
               value={description} 
@@ -125,93 +126,94 @@ export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: 
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-foreground">Status</label>
-            <Select value={status} onChange={(e) => setStatus(e.target.value)}>
-              <option value="Backlog">Backlog</option>
-              <option value="Todo">Todo</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Review">Review</option>
-              <option value="Done">Done</option>
-            </Select>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Status</label>
+              <Select value={status} onChange={(e) => setStatus(e.target.value)}>
+                <option value="Backlog">Backlog</option>
+                <option value="Todo">Todo</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Review">Review</option>
+                <option value="Done">Done</option>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Priority</label>
+              <Select value={priority} onChange={(e) => setPriority(e.target.value as Priority)}>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </Select>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-foreground">Priority</label>
-            <Select value={priority} onChange={(e) => setPriority(e.target.value as Priority)}>
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
-            </Select>
-          </div>
-        </div>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Assignee</label>
+              <Select value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)}>
+                <option value="">Unassigned</option>
+                {DUMMY_USERS.map(user => (
+                  <option key={user.id} value={user.id}>{user.name}</option>
+                ))}
+              </Select>
+            </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-foreground">Assignee</label>
-            <Select value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)}>
-              <option value="">Unassigned</option>
-              {DUMMY_USERS.map(user => (
-                <option key={user.id} value={user.id}>{user.name}</option>
-              ))}
-            </Select>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-foreground">Due Date</label>
-            <Input 
-              type="date" 
-              value={dueDate} 
-              onChange={(e) => setDueDate(e.target.value)} 
-            />
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Due Date</label>
+              <Input 
+                type="date" 
+                value={dueDate} 
+                onChange={(e) => setDueDate(e.target.value)} 
+              />
+            </div>
           </div>
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-foreground">Labels</label>
+          <label className="text-sm font-medium text-gray-900 dark:text-gray-100">Labels</label>
           <div className="flex flex-wrap gap-2">
             {AVAILABLE_LABELS.map(label => {
               const isSelected = selectedLabels.includes(label.id);
               return (
-                <button
+                <ToggleBadge
                   key={label.id}
-                  type="button"
+                  selected={isSelected}
+                  selectedColor={label.color}
                   onClick={() => toggleLabel(label.id)}
-                  className={cn(
-                    "px-3 py-1 text-xs font-medium rounded-badge border transition-colors",
-                    isSelected 
-                      ? label.color + " border-transparent" 
-                      : "bg-surface text-foreground/70 border-outline hover:bg-surface-variant"
-                  )}
                 >
                   {label.name}
-                </button>
+                </ToggleBadge>
               );
             })}
           </div>
         </div>
 
-        <div className="mt-auto pt-6 flex flex-col gap-3">
-          <Button type="submit" className="w-full">
-            {isEditing ? 'Save Changes' : 'Create Task'}
-          </Button>
-          
+        <div className="pt-6 flex items-center justify-end gap-3 mt-4 border-t border-gray-200 dark:border-white/10">
           {isEditing && onDelete && (
             <Button 
               type="button" 
               variant="danger" 
-              className="w-full"
+              className="mr-auto"
               onClick={() => {
                 onDelete(initialData.id);
                 onClose();
               }}
             >
-              Delete Task
+              Delete
             </Button>
           )}
+          
+          <Button type="button" variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          
+          <Button type="submit">
+            {isEditing ? 'Save Changes' : 'Create Task'}
+          </Button>
         </div>
       </form>
-    </Drawer>
+    </Modal>
   );
 }
