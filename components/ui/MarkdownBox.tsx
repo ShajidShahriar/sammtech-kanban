@@ -11,7 +11,7 @@ export function MarkdownBox({ content, className }: MarkdownBoxProps) {
   return (
     <div 
       className={cn(
-        "flex min-h-[80px] w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0a0a0a] px-3 py-2 text-sm text-gray-900 dark:text-white overflow-y-auto transition-colors",
+        "flex min-h-[80px] w-full rounded-lg border border-gray-200 dark:border-white/10 bg-card dark:bg-card-dark px-3 py-2 text-sm text-gray-900 dark:text-white overflow-y-auto transition-colors",
         className
       )}
     >

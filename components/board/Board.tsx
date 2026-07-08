@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Column } from './Column';
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import { useKanbanBoard } from '@/hooks/useKanbanBoard';
@@ -13,8 +13,30 @@ import { EmptyState } from '../ui/EmptyState';
 import { Button } from '../ui/Button';
 import { BoardSkeleton } from './BoardSkeleton';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 const MotionButton = motion.create(Button);
+
+// Issue #30: Extracted scroll indicator sub-component
+function ScrollIndicator({ direction, onClick }: { direction: 'left' | 'right'; onClick: () => void }) {
+  const isLeft = direction === 'left';
+  return (
+    <div className={cn(
+      "absolute top-1/2 -translate-y-1/2 w-24 h-full from-surface to-transparent pointer-events-none flex items-center px-2",
+      isLeft ? "left-0 bg-gradient-to-r" : "right-0 bg-gradient-to-l justify-end"
+    )}>
+      <Button
+        variant="secondary"
+        size="icon"
+        className="rounded-full shadow-lg pointer-events-auto shrink-0 bg-surface border-outline"
+        onClick={onClick}
+        aria-label={`Scroll ${direction}`}
+      >
+        {isLeft ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+      </Button>
+    </div>
+  );
+}
 
 export function Board() {
   const {
@@ -34,20 +56,20 @@ export function Board() {
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
 
-  // Check scroll position to show/hide scroll buttons
-  const checkScroll = () => {
+  // Issue #11: Memoize checkScroll
+  const checkScroll = useCallback(() => {
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
       setCanScrollLeft(scrollLeft > 0);
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
     }
-  };
+  }, []);
 
   React.useEffect(() => {
     checkScroll();
     window.addEventListener('resize', checkScroll);
     return () => window.removeEventListener('resize', checkScroll);
-  }, [board.columns.length]);
+  }, [checkScroll, board.columns.length]);
 
   const scrollRight = () => {
     if (scrollRef.current) {
@@ -129,20 +151,7 @@ export function Board() {
             <EmptyState
               icon={LayoutList}
               title="No Columns Found"
-              description="Your board is completely empty. Create a column to start organizing your tasks."
-              action={
-                <MotionButton
-                  key="add-column-empty"
-                  layout="position"
-                  layoutId="new-column"
-                  variant="primary"
-                  onClick={handleAddColumnClick}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Column
-                </MotionButton>
-              }
+              description="Your board is completely empty. Create a column from the top right to start organizing your tasks."
             />
           </div>
         ) : (
@@ -153,8 +162,8 @@ export function Board() {
                   className="overflow-x-auto overflow-y-hidden p-6 h-full flex items-start gap-6 relative"
                   ref={(el) => {
                     provided.innerRef(el);
-                    // @ts-ignore
-                    scrollRef.current = el;
+                    // Issue #8: Proper ref merge instead of @ts-ignore
+                    (scrollRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
                   }}
                   onScroll={checkScroll}
                   {...provided.droppableProps}
@@ -178,30 +187,10 @@ export function Board() {
                 
                 {/* Scroll Indicators */}
                 {canScrollLeft && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-24 h-full bg-gradient-to-r from-surface to-transparent pointer-events-none flex items-center px-2">
-                    <Button 
-                      variant="secondary" 
-                      size="icon" 
-                      className="rounded-full shadow-lg pointer-events-auto shrink-0 bg-surface border-outline"
-                      onClick={scrollLeft}
-                      aria-label="Scroll left"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </Button>
-                  </div>
+                  <ScrollIndicator direction="left" onClick={scrollLeft} />
                 )}
                 {canScrollRight && (
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-24 h-full bg-gradient-to-l from-surface to-transparent pointer-events-none flex items-center justify-end px-2">
-                    <Button 
-                      variant="secondary" 
-                      size="icon" 
-                      className="rounded-full shadow-lg pointer-events-auto shrink-0 bg-surface border-outline"
-                      onClick={scrollRight}
-                      aria-label="Scroll right"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </Button>
-                  </div>
+                  <ScrollIndicator direction="right" onClick={scrollRight} />
                 )}
               </div>
             )}

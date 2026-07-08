@@ -1,7 +1,10 @@
+'use client';
+
 import * as React from 'react';
 import { X } from 'lucide-react';
 import { Button } from './Button';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface DrawerProps {
   isOpen: boolean;
@@ -27,28 +30,40 @@ export function Drawer({ isOpen, onClose, title, children }: DrawerProps) {
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      />
-      
-      {/* Panel */}
-      <div className="relative w-full max-w-md h-full bg-white dark:bg-[#0a0a0a] border-l border-gray-200 dark:border-white/10 flex flex-col transform transition-transform duration-300">
-        <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-white/10">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
-          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close drawer">
-            <X className="w-5 h-5 shrink-0" />
-          </Button>
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          
+          {/* Panel — Issue #27: Animated slide-in/out */}
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            className="relative w-full max-w-md h-full bg-card dark:bg-card-dark border-l border-gray-200 dark:border-white/10 flex flex-col"
+          >
+            <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-white/10">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
+              <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close drawer">
+                <X className="w-5 h-5 shrink-0" />
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              {children}
+            </div>
+          </motion.div>
         </div>
-        <div className="flex-1 overflow-y-auto p-5 space-y-6">
-          {children}
-        </div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 }

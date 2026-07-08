@@ -1,12 +1,15 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { Task, Priority, Label, Assignee } from '@/types';
+import { Task, Priority } from '@/types';
 import { Drawer } from '../ui/Drawer';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { Select } from '../ui/Select';
 import { Button } from '../ui/Button';
 import { MarkdownRenderer } from '../ui/MarkdownRenderer';
-import { AVAILABLE_LABELS, DUMMY_USERS } from '@/lib/dummy-data';
+import { DUMMY_USERS } from '@/lib/dummy-data';
+import { useKanbanBoard } from '@/hooks/useKanbanBoard';
 import { cn } from '@/lib/utils';
 
 interface TaskSidebarProps {
@@ -18,14 +21,16 @@ interface TaskSidebarProps {
 }
 
 export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: TaskSidebarProps) {
+  const { board } = useKanbanBoard();
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [status, setStatus] = useState('Todo');
+  const [status, setStatus] = useState(board.columns[0]?.id || '');
   const [priority, setPriority] = useState<Priority>('Medium');
   const [dueDate, setDueDate] = useState('');
   const [assigneeId, setAssigneeId] = useState('');
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
-  
+
   const [previewMode, setPreviewMode] = useState(false);
 
   useEffect(() => {
@@ -41,7 +46,7 @@ export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: 
       } else {
         setTitle('');
         setDescription('');
-        setStatus('Todo');
+        setStatus(board.columns[0]?.id || '');
         setPriority('Medium');
         setDueDate('');
         setAssigneeId('');
@@ -49,17 +54,17 @@ export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: 
       }
       setPreviewMode(false);
     }
-  }, [isOpen, initialData]);
+  }, [isOpen, initialData, board.columns]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
     const assignee = DUMMY_USERS.find(u => u.id === assigneeId);
-    const labels = AVAILABLE_LABELS.filter(l => selectedLabels.includes(l.id));
+    const labels = (board.labels || []).filter(l => selectedLabels.includes(l.id));
 
     const taskData: Task = {
-      id: initialData?.id || `task-${Date.now()}`,
+      id: initialData?.id || crypto.randomUUID(),
       title,
       description,
       status,
@@ -74,12 +79,13 @@ export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: 
   };
 
   const toggleLabel = (labelId: string) => {
-    setSelectedLabels(prev => 
+    setSelectedLabels(prev =>
       prev.includes(labelId) ? prev.filter(id => id !== labelId) : [...prev, labelId]
     );
   };
 
   const isEditing = !!initialData;
+  const availableLabels = board.labels || [];
 
   return (
     <Drawer
@@ -88,38 +94,38 @@ export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: 
       title={isEditing ? 'Edit Task' : 'Create New Task'}
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 h-full pb-8">
-        
+
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-foreground">Title</label>
-          <Input 
-            value={title} 
-            onChange={(e) => setTitle(e.target.value)} 
-            placeholder="e.g. Build UI layout" 
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Build UI layout"
             autoFocus
-            required 
+            required
           />
         </div>
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium text-foreground">Description</label>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => setPreviewMode(!previewMode)}
-              className="text-xs text-primary font-medium hover:underline"
+              className="text-xs text-gray-900 dark:text-gray-100 font-medium hover:underline"
             >
               {previewMode ? 'Edit Markdown' : 'Preview'}
             </button>
           </div>
           {previewMode ? (
-            <div className="min-h-32 p-3 border border-outline rounded-md bg-surface overflow-y-auto">
+            <div className="min-h-32 p-3 border border-gray-200 dark:border-white/10 rounded-md bg-card dark:bg-card-dark overflow-y-auto">
               <MarkdownRenderer content={description || '*No description provided.*'} />
             </div>
           ) : (
-            <Textarea 
-              value={description} 
-              onChange={(e) => setDescription(e.target.value)} 
-              placeholder="Use markdown (**bold**, _italic_, - lists)" 
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Use markdown (**bold**, _italic_, - lists)"
               className="min-h-32"
             />
           )}
@@ -129,11 +135,9 @@ export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: 
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-foreground">Status</label>
             <Select value={status} onChange={(e) => setStatus(e.target.value)}>
-              <option value="Backlog">Backlog</option>
-              <option value="Todo">Todo</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Review">Review</option>
-              <option value="Done">Done</option>
+              {board.columns.map(col => (
+                <option key={col.id} value={col.id}>{col.title}</option>
+              ))}
             </Select>
           </div>
 
@@ -160,10 +164,10 @@ export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: 
 
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-foreground">Due Date</label>
-            <Input 
-              type="date" 
-              value={dueDate} 
-              onChange={(e) => setDueDate(e.target.value)} 
+            <Input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
             />
           </div>
         </div>
@@ -171,7 +175,7 @@ export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: 
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-foreground">Labels</label>
           <div className="flex flex-wrap gap-2">
-            {AVAILABLE_LABELS.map(label => {
+            {availableLabels.map(label => {
               const isSelected = selectedLabels.includes(label.id);
               return (
                 <button
@@ -179,10 +183,10 @@ export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: 
                   type="button"
                   onClick={() => toggleLabel(label.id)}
                   className={cn(
-                    "px-3 py-1 text-xs font-medium rounded-badge border transition-colors",
-                    isSelected 
-                      ? label.color + " border-transparent" 
-                      : "bg-surface text-foreground/70 border-outline hover:bg-surface-variant"
+                    "px-3 py-1 text-xs font-medium rounded-md border transition-colors",
+                    isSelected
+                      ? "bg-gray-900 dark:bg-white text-white dark:text-black border-transparent"
+                      : "bg-white dark:bg-card-dark text-gray-600 dark:text-gray-400 border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5"
                   )}
                 >
                   {label.name}
@@ -196,11 +200,11 @@ export function TaskSidebar({ isOpen, onClose, initialData, onSave, onDelete }: 
           <Button type="submit" className="w-full">
             {isEditing ? 'Save Changes' : 'Create Task'}
           </Button>
-          
+
           {isEditing && onDelete && (
-            <Button 
-              type="button" 
-              variant="danger" 
+            <Button
+              type="button"
+              variant="danger"
               className="w-full"
               onClick={() => {
                 onDelete(initialData.id);

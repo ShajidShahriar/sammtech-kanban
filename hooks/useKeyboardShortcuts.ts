@@ -4,10 +4,12 @@ import { useEffect } from 'react';
 import { useKanbanBoard } from './useKanbanBoard';
 
 export function useKeyboardShortcuts() {
-  const { 
-    setIsModalOpen, 
-    setEditingTaskId, 
-    undo, 
+  const {
+    isModalOpen,
+    isColumnModalOpen,
+    setIsModalOpen,
+    setEditingTaskId,
+    undo,
     redo,
     canUndo,
     canRedo
@@ -18,8 +20,9 @@ export function useKeyboardShortcuts() {
       const target = e.target as HTMLElement;
       const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
 
+
       if (isInput) {
-        if (e.key === 'Escape') {
+        if (e.key === 'Escape' && !isModalOpen && !isColumnModalOpen) {
           setIsModalOpen(false);
           setEditingTaskId(null);
         }
@@ -35,8 +38,10 @@ export function useKeyboardShortcuts() {
           }
           break;
         case 'escape':
-          setIsModalOpen(false);
-          setEditingTaskId(null);
+          if (!isModalOpen && !isColumnModalOpen) {
+            setIsModalOpen(false);
+            setEditingTaskId(null);
+          }
           break;
         case 'z':
           if (e.metaKey || e.ctrlKey) {
@@ -53,5 +58,5 @@ export function useKeyboardShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setIsModalOpen, setEditingTaskId, undo, redo, canUndo, canRedo]);
+  }, [setIsModalOpen, setEditingTaskId, undo, redo, canUndo, canRedo, isModalOpen, isColumnModalOpen]);
 }

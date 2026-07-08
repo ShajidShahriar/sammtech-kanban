@@ -1,4 +1,13 @@
-import { BoardData, Label, Assignee } from '@/types';
+import { BoardData, Label, Assignee, LabelColor } from '@/types';
+
+function relativeDateStr(offsetDays: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 export const AVAILABLE_LABELS: Label[] = [
   { id: 'l1', name: 'Setup', color: 'outline' },
@@ -32,7 +41,7 @@ export const initialBoardData: BoardData = {
       priority: 'High',
       labels: [AVAILABLE_LABELS[0]],
       assignee: DUMMY_USERS[0],
-      dueDate: '2023-12-01',
+      dueDate: relativeDateStr(3),
     },
     {
       id: 'task-2',

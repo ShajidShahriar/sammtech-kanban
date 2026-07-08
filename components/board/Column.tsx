@@ -1,3 +1,5 @@
+'use client';
+
 import { Task } from '@/types';
 import { TaskCard } from './TaskCard';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
@@ -5,6 +7,7 @@ import { Edit2, Trash2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface ColumnProps {
   id: string;
@@ -20,12 +23,11 @@ export function Column({ id, title, tasks, index, onEdit, onDelete }: ColumnProp
     <Draggable draggableId={id} index={index}>
       {(provided) => (
         <div
-          className="flex flex-col w-[320px] shrink-0 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-white/10 rounded-lg p-3 max-h-full"
+          className="flex flex-col w-[320px] shrink-0 bg-card-muted dark:bg-card-muted-dark border border-gray-200 dark:border-white/10 rounded-lg p-3 max-h-full"
           ref={provided.innerRef}
           {...provided.draggableProps}
         >
-          <motion.div
-            layoutId={`column-${id}`}
+          <div
             className="flex items-center justify-between mb-4 px-1 group cursor-grab active:cursor-grabbing"
             {...provided.dragHandleProps}
           >
@@ -44,12 +46,15 @@ export function Column({ id, title, tasks, index, onEdit, onDelete }: ColumnProp
                 <Trash2 className="w-3 h-3 shrink-0 text-red-500 hover:text-red-600" />
               </Button>
             </div>
-          </motion.div>
+          </div>
 
           <Droppable droppableId={id} type="task">
             {(provided, snapshot) => (
               <div
-                className={`flex flex-col gap-3 overflow-y-auto min-h-[150px] pb-2 rounded-lg transition-colors [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${snapshot.isDraggingOver ? 'bg-black/5 dark:bg-white/5' : ''}`}
+                className={cn(
+                  "flex flex-col gap-3 overflow-y-auto min-h-[150px] pb-2 rounded-lg transition-colors [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
+                  snapshot.isDraggingOver && "bg-black/5 dark:bg-white/5"
+                )}
                 ref={provided.innerRef}
                 {...provided.droppableProps}
               >

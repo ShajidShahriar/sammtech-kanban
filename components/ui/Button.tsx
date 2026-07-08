@@ -11,8 +11,10 @@ const buttonVariants = cva(
         primary: 'bg-gray-900 dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100',
         secondary: 'border border-gray-200 dark:border-white/20 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800',
         danger: 'bg-red-600 text-white hover:bg-red-700',
-        ghost: 'text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950',
+        ghost: 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
         icon: 'border border-gray-200 dark:border-white/20 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800',
+        // Issue #17: Missing outline variant used in UserProfileModal
+        outline: 'border border-gray-200 dark:border-white/20 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 bg-transparent',
       },
       size: {
         default: 'px-4 py-2 text-sm rounded-lg',

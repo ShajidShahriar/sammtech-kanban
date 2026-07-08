@@ -45,12 +45,11 @@ export function Modal({ isOpen, onClose, title, layoutId, children }: ModalProps
           
           {/* Dialog */}
           <motion.div 
-            layoutId={layoutId}
             transition={springTransition}
-            initial={!layoutId ? { opacity: 0, scale: 0.95 } : false}
-            animate={!layoutId ? { opacity: 1, scale: 1 } : { opacity: 1 }}
-            exit={!layoutId ? { opacity: 0, scale: 0.95 } : { opacity: 0 }}
-            className="relative w-full max-w-2xl max-h-[90vh] bg-white dark:bg-[#0a0a0a] border border-gray-200 dark:border-white/10 flex flex-col rounded-lg overflow-hidden"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="relative w-full max-w-2xl max-h-[90vh] bg-card dark:bg-card-dark border border-gray-200 dark:border-white/10 flex flex-col rounded-lg overflow-hidden"
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"

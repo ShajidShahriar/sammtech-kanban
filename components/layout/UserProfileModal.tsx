@@ -1,20 +1,52 @@
-import React from 'react';
+'use client';
+
+import React, { useRef } from 'react';
 import { Modal } from '../ui/Modal';
 import { Heatmap } from '../ui/Heatmap';
 import { Avatar } from '../ui/Avatar';
 import { Button } from '../ui/Button';
 import { Download, Upload, LogOut } from 'lucide-react';
 import { useKanbanBoard } from '@/hooks/useKanbanBoard';
-import { useRef } from 'react';
+import { BoardData } from '@/types';
 
 interface UserProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+// Issue #2: Structural validation for imported JSON
+function validateBoardJson(json: any): json is { tasks: any[]; columns: any[]; labels?: any[] } {
+  if (!json || typeof json !== 'object') return false;
+  if (!Array.isArray(json.tasks) || !Array.isArray(json.columns)) return false;
+
+  // Validate each column
+  for (const col of json.columns) {
+    if (!col || typeof col.id !== 'string' || typeof col.title !== 'string') return false;
+  }
+
+  // Validate each task
+  for (const task of json.tasks) {
+    if (!task || typeof task.id !== 'string' || typeof task.title !== 'string') return false;
+    if (typeof task.status !== 'string' || typeof task.priority !== 'string') return false;
+    if (typeof task.description !== 'string') return false;
+    if (!Array.isArray(task.labels)) return false;
+  }
+
+  // Validate labels if present
+  if (json.labels !== undefined) {
+    if (!Array.isArray(json.labels)) return false;
+    for (const label of json.labels) {
+      if (!label || typeof label.id !== 'string' || typeof label.name !== 'string') return false;
+    }
+  }
+
+  return true;
+}
+
 export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
   const { board, updateBoard } = useKanbanBoard();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importError, setImportError] = React.useState<string | null>(null);
 
   const handleExport = () => {
     const dataStr = JSON.stringify(board, null, 2);
@@ -30,6 +62,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
   };
 
   const handleImportClick = () => {
+    setImportError(null);
     fileInputRef.current?.click();
   };
 
@@ -41,18 +74,27 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
     reader.onload = (event) => {
       try {
         const json = JSON.parse(event.target?.result as string);
-        if (json && json.tasks && json.columns) {
-          updateBoard(json);
+        if (validateBoardJson(json)) {
+          if (!json.labels) json.labels = [];
+          updateBoard(json as BoardData);
+          setImportError(null);
           onClose();
         } else {
-          alert('Invalid Kanban board JSON file format.');
+          setImportError('Invalid format: missing required fields (tasks, columns, or their properties).');
         }
-      } catch (err) {
-        alert('Failed to parse JSON file.');
+      } catch {
+        setImportError('Failed to parse JSON file. Make sure it\'s a valid JSON file.');
       }
     };
     reader.readAsText(file);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem('theme');
+    setImportError(null);
+    onClose();
+    // In a real app this would redirect to login
   };
 
   return (
@@ -73,7 +115,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
 
         <div className="flex flex-col gap-3">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Activity Heatmap</h3>
-          <div className="p-4 rounded-xl border border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-[#0a0a0a] overflow-x-auto flex justify-center">
+          <div className="p-4 rounded-xl border border-gray-200 dark:border-white/20 bg-card-muted dark:bg-card-muted-dark overflow-x-auto flex justify-center">
             <Heatmap />
           </div>
         </div>
@@ -96,7 +138,14 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
               <Upload className="w-4 h-4" />
               Import Data (JSON)
             </Button>
-            <Button variant="outline" className="justify-start gap-2 w-full text-red-600 dark:text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30">
+            {importError && (
+              <p className="text-xs text-red-500 px-1">{importError}</p>
+            )}
+            <Button 
+              variant="outline" 
+              className="justify-start gap-2 w-full text-red-600 dark:text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+              onClick={handleSignOut}
+            >
               <LogOut className="w-4 h-4" />
               Sign Out
             </Button>

@@ -1,14 +1,15 @@
+'use client';
+
 import { Task } from '@/types';
 import { Card, CardHeader, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
-import { Clock, MoreHorizontal } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { Draggable } from '@hello-pangea/dnd';
 import { useKanbanBoard } from '@/hooks/useKanbanBoard';
 import { Avatar } from '../ui/Avatar';
 import { motion } from 'framer-motion';
 import { springTransition } from '@/lib/animations';
 import { ProgressBar } from '../ui/ProgressBar';
-import { cn } from '@/lib/utils';
 
 const MotionCard = motion.create(Card);
 
@@ -62,20 +63,13 @@ export function TaskCard({ task, index }: TaskCardProps) {
                   {task.title}
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors opacity-0 group-hover:opacity-100"
-                  aria-label="More options"
-                >
-                  <MoreHorizontal className="w-4 h-4 shrink-0" />
-                </button>
-              </div>
             </CardHeader>
 
             {task.labels && task.labels.length > 0 && (
               <div className="px-4 pb-3 flex flex-wrap gap-1">
                 {task.labels.map(label => (
-                  <Badge key={label.id} variant={label.color as any}>
+                  // Issue #14: Proper type from LabelColor — no more `as any`
+                  <Badge key={label.id} variant={label.color}>
                     {label.name}
                   </Badge>
                 ))}
