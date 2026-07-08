@@ -16,6 +16,8 @@ interface KanbanContextType {
   addColumn: (title: string) => void;
   updateColumn: (columnId: string, title: string) => void;
   deleteColumn: (columnId: string) => void;
+  addLabel: (name: string, color: string, id?: string) => void;
+  deleteLabel: (labelId: string) => void;
   // UI state for sidebar
   isModalOpen: boolean;
   setIsModalOpen: (isOpen: boolean) => void;
@@ -50,7 +52,23 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        setBoard(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        
+        // Ensure old stored data gets the outline style for labels
+        if (!parsed.labels) {
+          parsed.labels = initialBoardData.labels;
+        } else {
+          parsed.labels = parsed.labels.map((l: any) => ({ ...l, color: 'outline' }));
+        }
+
+        if (parsed.tasks) {
+          parsed.tasks = parsed.tasks.map((t: any) => ({
+            ...t,
+            labels: t.labels ? t.labels.map((l: any) => ({ ...l, color: 'outline' })) : []
+          }));
+        }
+
+        setBoard(parsed);
       }
     } catch (e) {
       console.error('Failed to load board data from local storage', e);
@@ -117,12 +135,32 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
+  const addLabel = (name: string, color: string, id?: string) => {
+    const newLabel = { id: id || `label-${Date.now()}`, name, color };
+    setBoard(prev => ({
+      ...prev,
+      labels: [...(prev.labels || []), newLabel]
+    }));
+  };
+
+  const deleteLabel = (labelId: string) => {
+    setBoard(prev => ({
+      ...prev,
+      labels: (prev.labels || []).filter(l => l.id !== labelId),
+      // Also remove it from all tasks
+      tasks: prev.tasks.map(t => ({
+        ...t,
+        labels: t.labels.filter(l => l.id !== labelId)
+      }))
+    }));
+  };
+
   return React.createElement(
     KanbanContext.Provider,
     {
       value: { 
         board, updateBoard, addTask, updateTask, deleteTask, isLoaded,
-        addColumn, updateColumn, deleteColumn,
+        addColumn, updateColumn, deleteColumn, addLabel, deleteLabel,
         isModalOpen, setIsModalOpen, editingTaskId, setEditingTaskId,
         searchQuery, setSearchQuery, assigneeFilter, setAssigneeFilter,
         priorityFilter, setPriorityFilter, labelFilter, setLabelFilter

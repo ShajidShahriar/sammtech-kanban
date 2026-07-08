@@ -7,6 +7,8 @@ import { useKanbanBoard } from '@/hooks/useKanbanBoard';
 import { Avatar } from '../ui/Avatar';
 import { motion } from 'framer-motion';
 import { springTransition } from '@/lib/animations';
+import { ProgressBar } from '../ui/ProgressBar';
+import { cn } from '@/lib/utils';
 
 const MotionCard = motion.create(Card);
 
@@ -72,7 +74,7 @@ export function TaskCard({ task, index }: TaskCardProps) {
             {task.labels && task.labels.length > 0 && (
               <div className="px-4 pb-3 flex flex-wrap gap-1">
                 {task.labels.map(label => (
-                  <Badge key={label.id} variant="default">
+                  <Badge key={label.id} variant={label.color as any}>
                     {label.name}
                   </Badge>
                 ))}
@@ -85,6 +87,11 @@ export function TaskCard({ task, index }: TaskCardProps) {
                   {task.description}
                 </p>
               )}
+              
+              {task.progress !== undefined && task.progress > 0 && (
+                <ProgressBar progress={task.progress} className="mt-1" />
+              )}
+              
               <div className="flex items-center justify-between mt-1">
                 <Badge variant={priorityVariant[task.priority]}>{task.priority}</Badge>
                 <div className="flex items-center gap-2">

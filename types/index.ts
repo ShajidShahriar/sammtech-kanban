@@ -24,7 +24,7 @@ export interface Task {
     labels:Label[],
     priority: Priority,
     dueDate?:string ;
-
+    progress?:number;
 }
 
 export interface BoardData{
@@ -32,5 +32,6 @@ export interface BoardData{
     columns:{
         id:ColumnId,
         title:string; 
-    }[]
+    }[],
+    labels:Label[];
 }

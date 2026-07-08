@@ -8,6 +8,8 @@ const badgeVariants = cva('inline-flex items-center px-2 py-0.5 text-xs font-med
     variant: {
       default: 'border-gray-200 text-gray-600 dark:border-white/20 dark:text-gray-400',
       blue: 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400',
+      purple: 'border-purple-500 text-purple-700 dark:border-purple-400 dark:text-purple-400',
+      pink: 'border-pink-500 text-pink-700 dark:border-pink-400 dark:text-pink-400',
       outline: 'border-gray-200 text-gray-500 dark:border-white/20 dark:text-gray-500',
       success: 'border-green-500 text-green-700 dark:border-green-400 dark:text-green-400',
       danger: 'border-red-500 text-red-700 dark:border-red-400 dark:text-red-400',
@@ -24,3 +26,4 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, Varian
 export function Badge({ className, variant, ...props }: BadgeProps) {
   return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
 }
+export { badgeVariants };
