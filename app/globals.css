@@ -19,6 +19,15 @@ body {
 ::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 3px; }
 .dark ::-webkit-scrollbar-thumb { background: #333333; }
 
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 /* Geist Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }

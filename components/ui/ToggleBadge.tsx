@@ -15,8 +15,8 @@ export function ToggleBadge({ selected, selectedColor = 'default', className, ch
       className={cn(
         "cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 dark:focus-visible:ring-gray-700 transition-colors",
         selected 
-          ? badgeVariants({ variant: selectedColor }) 
-          : badgeVariants({ variant: 'outline', className: "opacity-60 hover:opacity-100 hover:bg-gray-50 dark:hover:bg-white/5" }),
+          ? badgeVariants({ variant: selectedColor, className: "shadow-sm scale-105" }) 
+          : badgeVariants({ variant: 'outline', className: "opacity-70 hover:opacity-100 hover:bg-gray-100 dark:hover:bg-white/10 hover:-translate-y-0.5 hover:shadow-sm" }),
         className
       )}
       {...props}

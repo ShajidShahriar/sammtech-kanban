@@ -233,7 +233,7 @@ export function TaskModal({ isOpen, onClose, initialData, onSave, onDelete }: Ta
             {availableLabels.map(label => {
               const isSelected = selectedLabels.includes(label.id);
               return (
-                <div key={label.id} className="flex items-center">
+                <div key={label.id} className="group relative flex items-center">
                   <ToggleBadge
                     selected={isSelected}
                     selectedColor={label.color as any}
@@ -241,6 +241,22 @@ export function TaskModal({ isOpen, onClose, initialData, onSave, onDelete }: Ta
                   >
                     {label.name}
                   </ToggleBadge>
+                  
+                  {/* Delete Button (appears on hover) */}
+                  <button 
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm(`Are you sure you want to delete the "${label.name}" tag? It will be removed from all tasks.`)) {
+                        deleteLabel(label.id);
+                        setSelectedLabels(prev => prev.filter(id => id !== label.id));
+                      }
+                    }}
+                    className="absolute -top-1.5 -right-1.5 hidden group-hover:flex items-center justify-center w-4 h-4 bg-red-500 text-white rounded-full shadow-sm z-10 hover:bg-red-600 transition-colors"
+                    title="Delete label"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
                 </div>
               );
             })}

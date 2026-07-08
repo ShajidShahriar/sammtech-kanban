@@ -31,6 +31,7 @@ export function TaskCard({ task, index }: TaskCardProps) {
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
+          className="touch-none"
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           style={{ ...provided.draggableProps.style, opacity: snapshot.isDragging ? 0.8 : 1 }}
@@ -43,7 +44,7 @@ export function TaskCard({ task, index }: TaskCardProps) {
             layout={!snapshot.isDragging ? "position" : false}
             layoutId={!snapshot.isDragging ? task.id : undefined}
             transition={springTransition}
-            className="group cursor-grab active:cursor-grabbing hover:border-gray-300 dark:hover:border-white/30 transition-colors duration-200"
+            className="group cursor-grab active:cursor-grabbing hover:border-gray-400 dark:hover:border-white/40 transition-colors duration-200 shadow-sm hover:shadow-md"
             role="button"
             tabIndex={0}
             aria-label={`Task: ${task.title}, Status: ${task.status}, Priority: ${task.priority}`}
@@ -62,7 +63,7 @@ export function TaskCard({ task, index }: TaskCardProps) {
                 </p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
-                <button 
+                <button
                   className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors opacity-0 group-hover:opacity-100"
                   aria-label="More options"
                 >
@@ -70,7 +71,7 @@ export function TaskCard({ task, index }: TaskCardProps) {
                 </button>
               </div>
             </CardHeader>
-            
+
             {task.labels && task.labels.length > 0 && (
               <div className="px-4 pb-3 flex flex-wrap gap-1">
                 {task.labels.map(label => (
@@ -87,11 +88,11 @@ export function TaskCard({ task, index }: TaskCardProps) {
                   {task.description}
                 </p>
               )}
-              
+
               {task.progress !== undefined && task.progress > 0 && (
                 <ProgressBar progress={task.progress} className="mt-1" />
               )}
-              
+
               <div className="flex items-center justify-between mt-1">
                 <Badge variant={priorityVariant[task.priority]}>{task.priority}</Badge>
                 <div className="flex items-center gap-2">

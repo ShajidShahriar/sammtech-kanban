@@ -18,11 +18,19 @@ interface KanbanContextType {
   deleteColumn: (columnId: string) => void;
   addLabel: (name: string, color: string, id?: string) => void;
   deleteLabel: (labelId: string) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
   // UI state for sidebar
   isModalOpen: boolean;
   setIsModalOpen: (isOpen: boolean) => void;
   editingTaskId: string | null;
   setEditingTaskId: (id: string | null) => void;
+  isColumnModalOpen: boolean;
+  setIsColumnModalOpen: (isOpen: boolean) => void;
+  editingColumn: { id: string; title: string } | undefined;
+  setEditingColumn: (column: { id: string; title: string } | undefined) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   assigneeFilter: string;
@@ -31,22 +39,117 @@ interface KanbanContextType {
   setPriorityFilter: (priority: string) => void;
   labelFilter: string;
   setLabelFilter: (id: string) => void;
+  dateFilter: string | null;
+  setDateFilter: (date: string | null) => void;
 }
 
 const KanbanContext = createContext<KanbanContextType | undefined>(undefined);
 
 export function KanbanProvider({ children }: { children: React.ReactNode }) {
-  const [board, setBoard] = useState<BoardData>(initialBoardData);
+  const [historyState, setHistoryState] = useState<{
+    past: BoardData[];
+    present: BoardData;
+    future: BoardData[];
+  }>({
+    past: [],
+    present: initialBoardData,
+    future: []
+  });
+  const board = historyState.present;
+
   const [isLoaded, setIsLoaded] = useState(false);
-  
+
+  // Custom setBoard to handle history and broadcasting
+  const setBoard = (newBoard: BoardData | ((prev: BoardData) => BoardData), addToHistory = true, broadcast = true) => {
+    setHistoryState(curr => {
+      const resolvedBoard = typeof newBoard === 'function' ? newBoard(curr.present) : newBoard;
+      
+      let nextState = { ...curr, present: resolvedBoard };
+
+      if (addToHistory) {
+        const newPast = [...curr.past, curr.present];
+        if (newPast.length > 50) newPast.shift();
+        nextState = {
+          past: newPast,
+          present: resolvedBoard,
+          future: []
+        };
+      }
+
+      if (broadcast) {
+        try {
+          const channel = new BroadcastChannel('kanban_sync');
+          channel.postMessage(resolvedBoard);
+          channel.close();
+        } catch (e) {
+          console.error('BroadcastChannel failed', e);
+        }
+      }
+
+      return nextState;
+    });
+  };
+
+  const undo = () => {
+    setHistoryState(curr => {
+      if (curr.past.length === 0) return curr;
+      const previous = curr.past[curr.past.length - 1];
+      const newPast = curr.past.slice(0, curr.past.length - 1);
+      
+      const nextState = {
+        past: newPast,
+        present: previous,
+        future: [curr.present, ...curr.future]
+      };
+
+      try {
+        const channel = new BroadcastChannel('kanban_sync');
+        channel.postMessage(previous);
+        channel.close();
+      } catch (e) {}
+
+      return nextState;
+    });
+  };
+
+  const redo = () => {
+    setHistoryState(curr => {
+      if (curr.future.length === 0) return curr;
+      const next = curr.future[0];
+      const newFuture = curr.future.slice(1);
+
+      const nextState = {
+        past: [...curr.past, curr.present],
+        present: next,
+        future: newFuture
+      };
+
+      try {
+        const channel = new BroadcastChannel('kanban_sync');
+        channel.postMessage(next);
+        channel.close();
+      } catch (e) {}
+
+      return nextState;
+    });
+  };
+
+  const canUndo = historyState.past.length > 0;
+  const canRedo = historyState.future.length > 0;
+
   // Sidebar state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+
+  // Column modal state
+  const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
+  const [editingColumn, setEditingColumn] = useState<{ id: string; title: string } | undefined>();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [assigneeFilter, setAssigneeFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [labelFilter, setLabelFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -68,12 +171,23 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
           }));
         }
 
-        setBoard(parsed);
+        setHistoryState({ past: [], present: parsed, future: [] });
+      } else {
+        setHistoryState({ past: [], present: initialBoardData, future: [] });
       }
     } catch (e) {
       console.error('Failed to load board data from local storage', e);
+      setHistoryState({ past: [], present: initialBoardData, future: [] });
     }
     setIsLoaded(true);
+
+    // Setup BroadcastChannel for cross-tab sync
+    const channel = new BroadcastChannel('kanban_sync');
+    channel.onmessage = (event) => {
+      const newBoard = event.data;
+      setHistoryState(curr => ({ ...curr, present: newBoard }));
+    };
+    return () => channel.close();
   }, []);
 
   useEffect(() => {
@@ -161,9 +275,12 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
       value: { 
         board, updateBoard, addTask, updateTask, deleteTask, isLoaded,
         addColumn, updateColumn, deleteColumn, addLabel, deleteLabel,
+        undo, redo, canUndo, canRedo,
         isModalOpen, setIsModalOpen, editingTaskId, setEditingTaskId,
+        isColumnModalOpen, setIsColumnModalOpen, editingColumn, setEditingColumn,
         searchQuery, setSearchQuery, assigneeFilter, setAssigneeFilter,
-        priorityFilter, setPriorityFilter, labelFilter, setLabelFilter
+        priorityFilter, setPriorityFilter, labelFilter, setLabelFilter,
+        dateFilter, setDateFilter
       }
     },
     children

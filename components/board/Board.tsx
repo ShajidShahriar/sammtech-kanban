@@ -4,10 +4,11 @@ import React, { useState } from 'react';
 import { Column } from './Column';
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import { useKanbanBoard } from '@/hooks/useKanbanBoard';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { TaskModal } from './TaskModal';
 import { ColumnModal } from './ColumnModal';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
-import { Plus, LayoutList } from 'lucide-react';
+import { Plus, LayoutList, ChevronRight, ChevronLeft } from 'lucide-react';
 import { EmptyState } from '../ui/EmptyState';
 import { Button } from '../ui/Button';
 import { BoardSkeleton } from './BoardSkeleton';
@@ -21,18 +22,51 @@ export function Board() {
     isModalOpen, setIsModalOpen,
     editingTaskId, addTask, updateTask, deleteTask,
     addColumn, updateColumn, deleteColumn,
-    searchQuery, assigneeFilter, priorityFilter, labelFilter
+    isColumnModalOpen, setIsColumnModalOpen,
+    editingColumn, setEditingColumn,
+    searchQuery, assigneeFilter, priorityFilter, labelFilter, dateFilter
   } = useKanbanBoard();
 
-  const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
-  const [editingColumn, setEditingColumn] = useState<{ id: string; title: string } | undefined>();
+  useKeyboardShortcuts();
+
   const [deletingColumnId, setDeletingColumnId] = useState<string | null>(null);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+
+  // Check scroll position to show/hide scroll buttons
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  React.useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [board.columns.length]);
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ left: scrollRef.current.scrollWidth, behavior: 'smooth' });
+    }
+  };
+  
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+    }
+  };
 
   const filteredTasks = board.tasks.filter(task => {
     if (searchQuery && !task.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     if (assigneeFilter && task.assignee?.id !== assigneeFilter) return false;
     if (priorityFilter && task.priority !== priorityFilter) return false;
     if (labelFilter && !task.labels?.some(l => l.id === labelFilter)) return false;
+    if (dateFilter && task.dueDate !== dateFilter) return false;
     return true;
   });
 
@@ -114,39 +148,61 @@ export function Board() {
         ) : (
           <Droppable droppableId="board-columns" direction="horizontal" type="column">
             {(provided) => (
-              <div
-                className="flex-1 overflow-x-auto overflow-y-hidden p-6 h-full flex items-start gap-6"
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-              >
-                {board.columns.map((col, index) => {
-                  const columnTasks = filteredTasks.filter(task => task.status === col.id);
-                  return (
-                    <Column
-                      key={col.id}
-                      id={col.id}
-                      title={col.title}
-                      tasks={columnTasks}
-                      index={index}
-                      onEdit={handleEditColumn}
-                      onDelete={(id) => setDeletingColumnId(id)}
-                    />
-                  );
-                })}
-                {provided.placeholder}
-
-                {/* Add Column Ghost Button */}
-                <MotionButton
-                  key="add-column-ghost"
-                  layout="position"
-                  layoutId="new-column"
-                  variant="secondary"
-                  onClick={handleAddColumnClick}
-                  className="shrink-0 w-[320px] h-[72px] flex items-center justify-center gap-2 rounded-lg font-medium transition-all border-dashed"
+              <div className="relative flex-1 overflow-hidden">
+                <div
+                  className="overflow-x-auto overflow-y-hidden p-6 h-full flex items-start gap-6 relative"
+                  ref={(el) => {
+                    provided.innerRef(el);
+                    // @ts-ignore
+                    scrollRef.current = el;
+                  }}
+                  onScroll={checkScroll}
+                  {...provided.droppableProps}
                 >
-                  <Plus className="w-5 h-5 shrink-0" />
-                  Add Column
-                </MotionButton>
+                  {board.columns.map((col, index) => {
+                    const columnTasks = filteredTasks.filter(task => task.status === col.id);
+                    return (
+                      <Column
+                        key={col.id}
+                        id={col.id}
+                        title={col.title}
+                        tasks={columnTasks}
+                        index={index}
+                        onEdit={handleEditColumn}
+                        onDelete={(id) => setDeletingColumnId(id)}
+                      />
+                    );
+                  })}
+                  {provided.placeholder}
+                </div>
+                
+                {/* Scroll Indicators */}
+                {canScrollLeft && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-24 h-full bg-gradient-to-r from-surface to-transparent pointer-events-none flex items-center px-2">
+                    <Button 
+                      variant="secondary" 
+                      size="icon" 
+                      className="rounded-full shadow-lg pointer-events-auto shrink-0 bg-surface border-outline"
+                      onClick={scrollLeft}
+                      aria-label="Scroll left"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </Button>
+                  </div>
+                )}
+                {canScrollRight && (
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-24 h-full bg-gradient-to-l from-surface to-transparent pointer-events-none flex items-center justify-end px-2">
+                    <Button 
+                      variant="secondary" 
+                      size="icon" 
+                      className="rounded-full shadow-lg pointer-events-auto shrink-0 bg-surface border-outline"
+                      onClick={scrollRight}
+                      aria-label="Scroll right"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </Droppable>

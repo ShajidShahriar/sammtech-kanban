@@ -1,0 +1,105 @@
+'use client';
+
+import React, { useMemo, useRef, useEffect } from 'react';
+import { useKanbanBoard } from '@/hooks/useKanbanBoard';
+
+export function HorizontalCalendar() {
+  const { board, dateFilter, setDateFilter } = useKanbanBoard();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Generate 30 days (-7 to +23)
+  const dates = useMemo(() => {
+    const arr = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    for (let i = -7; i <= 23; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      arr.push(d);
+    }
+    return arr;
+  }, []);
+
+  // Format date as YYYY-MM-DD
+  const formatDateStr = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const todayStr = useMemo(() => formatDateStr(new Date()), []);
+
+  // Map due dates to priorities
+  const deadlines = useMemo(() => {
+    const map = new Map<string, string>(); // date string -> color class
+    board.tasks.forEach(task => {
+      if (task.dueDate) {
+        const existingColor = map.get(task.dueDate);
+        if (existingColor === 'bg-red-500') return; // High priority trumps all
+
+        if (task.priority === 'High') {
+          map.set(task.dueDate, 'bg-red-500');
+        } else if (task.priority === 'Medium' && existingColor !== 'bg-red-500') {
+          map.set(task.dueDate, 'bg-yellow-500');
+        } else if (task.priority === 'Low' && !existingColor) {
+          map.set(task.dueDate, 'bg-green-500');
+        }
+      }
+    });
+    return map;
+  }, [board.tasks]);
+
+  // Center today on initial load
+  useEffect(() => {
+    if (scrollRef.current) {
+      // Find today's element and scroll to center it
+      const todayEl = scrollRef.current.querySelector('[data-istoday="true"]') as HTMLElement;
+      if (todayEl) {
+        const containerWidth = scrollRef.current.clientWidth;
+        const scrollPos = todayEl.offsetLeft - (containerWidth / 2) + (todayEl.offsetWidth / 2);
+        scrollRef.current.scrollTo({ left: scrollPos, behavior: 'smooth' });
+      }
+    }
+  }, []);
+
+  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  return (
+    <div 
+      ref={scrollRef}
+      className="flex items-center gap-2 px-6 py-3 bg-surface-variant overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth"
+    >
+      {dates.map((date, i) => {
+        const dateStr = formatDateStr(date);
+        const isToday = dateStr === todayStr;
+        const isSelected = dateFilter === dateStr;
+        const dotColor = deadlines.get(dateStr);
+        const dayName = daysOfWeek[date.getDay()];
+
+        return (
+          <button
+            key={dateStr}
+            data-istoday={isToday}
+            onClick={() => setDateFilter(isSelected ? null : dateStr)}
+            className={`relative flex flex-col items-center justify-center shrink-0 w-14 h-16 rounded-lg transition-all cursor-pointer hover:-translate-y-1 ${
+              isSelected 
+                ? 'bg-primary text-primary-foreground shadow-md scale-105' 
+                : isToday
+                  ? 'bg-primary/20 text-foreground border-2 border-primary/40 hover:bg-primary/30'
+                  : 'bg-surface hover:bg-black/10 dark:hover:bg-white/10 text-foreground/80 hover:text-foreground shadow-sm hover:shadow-md'
+            }`}
+          >
+            <span className="text-xs font-medium uppercase tracking-wider">{dayName}</span>
+            <span className="text-lg font-bold">{date.getDate()}</span>
+            
+            {/* Deadline Dot */}
+            {dotColor && (
+              <span className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${dotColor} shadow-sm animate-fade-in`} />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}

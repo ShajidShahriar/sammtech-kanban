@@ -1,11 +1,10 @@
-import { Sidebar } from '@/components/layout/Sidebar';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { Main } from '@/components/layout/Main';
 
 export default function Home() {
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground font-sans text-sm antialiased" >
-      <Sidebar />
+    <AppLayout>
       <Main />
-    </div>
+    </AppLayout>
   );
 }

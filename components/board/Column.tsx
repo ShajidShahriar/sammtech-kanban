@@ -19,12 +19,12 @@ export function Column({ id, title, tasks, index, onEdit, onDelete }: ColumnProp
   return (
     <Draggable draggableId={id} index={index}>
       {(provided) => (
-        <div 
+        <div
           className="flex flex-col w-[320px] shrink-0 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-white/10 rounded-lg p-3 max-h-full"
           ref={provided.innerRef}
           {...provided.draggableProps}
         >
-          <motion.div 
+          <motion.div
             layoutId={`column-${id}`}
             className="flex items-center justify-between mb-4 px-1 group cursor-grab active:cursor-grabbing"
             {...provided.dragHandleProps}
@@ -35,7 +35,7 @@ export function Column({ id, title, tasks, index, onEdit, onDelete }: ColumnProp
                 {tasks.length}
               </Badge>
             </div>
-            
+
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button variant="ghost" size="tinyIcon" onClick={() => onEdit(id, title)} title="Edit Column" aria-label="Edit Column">
                 <Edit2 className="w-3 h-3 shrink-0" />
@@ -45,11 +45,11 @@ export function Column({ id, title, tasks, index, onEdit, onDelete }: ColumnProp
               </Button>
             </div>
           </motion.div>
-          
+
           <Droppable droppableId={id} type="task">
             {(provided, snapshot) => (
-              <div 
-                className={`flex flex-col gap-3 overflow-y-auto min-h-[150px] pb-2 rounded-lg transition-colors ${snapshot.isDraggingOver ? 'bg-black/5 dark:bg-white/5' : ''}`}
+              <div
+                className={`flex flex-col gap-3 overflow-y-auto min-h-[150px] pb-2 rounded-lg transition-colors [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${snapshot.isDraggingOver ? 'bg-black/5 dark:bg-white/5' : ''}`}
                 ref={provided.innerRef}
                 {...provided.droppableProps}
               >
