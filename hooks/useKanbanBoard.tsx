@@ -58,6 +58,14 @@ interface FilterContextType {
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
+function getTodayDateStr() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 
 export function KanbanProvider({ children }: { children: React.ReactNode }) {
   const [historyState, setHistoryState] = useState<{

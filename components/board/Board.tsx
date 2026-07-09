@@ -18,7 +18,6 @@ import { cn } from '@/lib/utils';
 
 const MotionButton = motion.create(Button);
 
-// Issue #30: Extracted scroll indicator sub-component
 function ScrollIndicator({ direction, onClick }: { direction: 'left' | 'right'; onClick: () => void }) {
   const isLeft = direction === 'left';
   return (
@@ -39,6 +38,14 @@ function ScrollIndicator({ direction, onClick }: { direction: 'left' | 'right'; 
   );
 }
 
+function getTodayDateStr() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export function Board() {
   const {
     board, updateBoard, isLoaded,
@@ -57,7 +64,6 @@ export function Board() {
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
 
-  // Issue #11: Memoize checkScroll
   const checkScroll = useCallback(() => {
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
@@ -84,12 +90,14 @@ export function Board() {
     }
   };
 
+  const todayStr = getTodayDateStr();
+
   const filteredTasks = board.tasks.filter(task => {
     if (searchQuery && !task.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     if (assigneeFilter && task.assignee?.id !== assigneeFilter) return false;
     if (priorityFilter && task.priority !== priorityFilter) return false;
     if (labelFilter && !task.labels?.some(l => l.id === labelFilter)) return false;
-    if (dateFilter && task.dueDate !== dateFilter) return false;
+    if (dateFilter && dateFilter !== todayStr && task.dueDate !== dateFilter) return false;
     return true;
   });
 
@@ -117,7 +125,7 @@ export function Board() {
 
     if (destFilteredTasks.length === 0) {
       newBoard.tasks.push(updatedTask);
-    } else if (destination.index >= destFilteredTasks.length) {
+    } else if (destination.index >= destFilteredTasks.length - 1) {
       const lastDestTask = destFilteredTasks[destFilteredTasks.length - 1];
       const lastDestTaskGlobalIndex = newBoard.tasks.findIndex(t => t.id === lastDestTask.id);
       newBoard.tasks.splice(lastDestTaskGlobalIndex + 1, 0, updatedTask);
@@ -130,7 +138,6 @@ export function Board() {
     updateBoard(newBoard);
   };
 
-  // Custom auto-scroller for horizontal dragging (fixes known dnd issues)
   useEffect(() => {
     let animationFrameId: number;
     let pointerX = 0;
@@ -149,18 +156,16 @@ export function Board() {
     const scrollLoop = () => {
       if (scrollRef.current && (isPointerDown || pointerX > 0)) {
         const rect = scrollRef.current.getBoundingClientRect();
-        // Only scroll if the pointer is vertically within the board area (roughly)
         if (pointerY >= rect.top && pointerY <= rect.bottom) {
-          const threshold = 120; // 120px from edge
+          const threshold = 120; 
           const maxSpeed = 20;
           let scrollDelta = 0;
           
           if (pointerX > rect.right - threshold && pointerX <= rect.right + 50) {
-            // Scroll right
+         
             const intensity = Math.max(0, Math.min(1, (pointerX - (rect.right - threshold)) / threshold));
             scrollDelta = intensity * maxSpeed;
           } else if (pointerX < rect.left + threshold && pointerX >= rect.left - 50) {
-            // Scroll left
             const intensity = Math.max(0, Math.min(1, ((rect.left + threshold) - pointerX) / threshold));
             scrollDelta = -intensity * maxSpeed;
           }
@@ -221,7 +226,6 @@ export function Board() {
                   className="overflow-auto p-6 h-full flex items-start gap-6 relative"
                   ref={(el) => {
                     provided.innerRef(el);
-                    // Issue #8: Proper ref merge instead of @ts-ignore
                     (scrollRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
                   }}
                   onScroll={checkScroll}

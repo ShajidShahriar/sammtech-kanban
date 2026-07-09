@@ -28,6 +28,7 @@ export function HorizontalCalendar() {
   };
 
   const todayStr = useMemo(() => formatDateStr(new Date()), []);
+  const selectedDate = dateFilter ?? todayStr;
 
   const deadlines = useMemo(() => {
     const map = new Map<string, string>();
@@ -68,23 +69,21 @@ export function HorizontalCalendar() {
     >
       {dates.map((date, i) => {
         const dateStr = formatDateStr(date);
-        const isToday = dateStr === todayStr;
-        const isSelected = dateFilter === dateStr;
+        const isSelected = selectedDate === dateStr;
         const dotColor = deadlines.get(dateStr);
         const dayName = daysOfWeek[date.getDay()];
 
         return (
           <button
             key={dateStr}
-            data-istoday={isToday}
-            onClick={() => setDateFilter(isSelected ? null : dateStr)}
+            data-istoday={dateStr === todayStr}
+            aria-pressed={isSelected}
+            onClick={() => setDateFilter(dateStr === todayStr ? null : dateStr)}
             className={cn(
-              "relative flex flex-col items-center justify-center shrink-0 w-14 h-16 rounded-lg transition-all cursor-pointer hover:-translate-y-1",
+              "relative flex flex-col items-center justify-center shrink-0 w-14 h-16 rounded-lg transition-all cursor-pointer hover:-translate-y-1 bg-surface text-foreground/80 hover:text-foreground shadow-sm hover:shadow-md",
               isSelected
-                ? "bg-primary text-primary-foreground shadow-md scale-105"
-                : isToday
-                  ? "bg-primary/20 text-foreground border-2 border-primary/40 hover:bg-primary/30"
-                  : "bg-surface hover:bg-black/10 dark:hover:bg-white/10 text-foreground/80 hover:text-foreground shadow-sm hover:shadow-md"
+                ? "border-2 border-primary bg-primary/10 text-foreground shadow-lg scale-105"
+                : "border border-transparent hover:bg-black/10 dark:hover:bg-white/10"
             )}
           >
             <span className="text-xs font-medium uppercase tracking-wider">{dayName}</span>
