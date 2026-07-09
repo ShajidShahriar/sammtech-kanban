@@ -58,7 +58,7 @@ A feature-rich, drag-and-drop Kanban board built with Next.js, TypeScript, and T
 
 - **Dark / Light Mode**: Full theme support.
 
-- **Keyboard Shortcuts**: Fast navigation without touching the mouse.
+- **Keyboard Shortcuts**: Fast navigation without touching the mouse.(N for new task , Cmd/ctrl + z to undo , Cmd/ctrl + Shift + z to redo)
 
 - **Guided Onboarding Tour**: For first-time users, via React Joyride.
 
