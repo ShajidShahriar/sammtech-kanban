@@ -12,13 +12,13 @@ export function MobileFABs() {
   } = useKanbanBoard();
 
   return (
-    <div className="fixed bottom-24 right-4 z-50 flex sm:hidden flex-col gap-3">
+    <div className="fixed bottom-24 right-4 z-40 flex sm:hidden flex-col gap-3">
       <button
         onClick={() => {
           setEditingColumn(undefined);
           setIsColumnModalOpen(true);
         }}
-        className="tour-add-column flex items-center justify-center w-12 h-12 bg-secondary text-secondary-foreground rounded-full shadow-lg shadow-black/10 dark:shadow-white/5 active:scale-95 transition-transform"
+        className="tour-add-column w-12 h-12 flex items-center justify-center bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-full shadow-xl active:scale-95 transition-transform border border-gray-300 dark:border-gray-600"
         aria-label="Add Column"
       >
         <LayoutList className="w-5 h-5" />
@@ -29,7 +29,7 @@ export function MobileFABs() {
           setEditingTaskId(null);
           setIsModalOpen(true);
         }}
-        className="tour-add-task flex items-center justify-center w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-xl shadow-primary/30 active:scale-95 transition-transform"
+        className="tour-add-task w-14 h-14 flex items-center justify-center bg-primary text-primary-foreground rounded-full shadow-xl active:scale-95 transition-transform border border-primary-foreground/20"
         aria-label="Add Task"
       >
         <Plus className="w-6 h-6" />

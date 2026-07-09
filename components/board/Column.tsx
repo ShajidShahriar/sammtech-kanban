@@ -23,7 +23,7 @@ export function Column({ id, title, tasks, index, onEdit, onDelete }: ColumnProp
     <Draggable draggableId={id} index={index}>
       {(provided) => (
         <div
-          className="flex flex-col w-[85vw] sm:w-[320px] max-w-[320px] shrink-0 bg-card-muted dark:bg-card-muted-dark border border-gray-200 dark:border-white/10 rounded-lg p-3 max-h-full"
+          className="flex flex-col w-11/12 sm:w-80 max-w-xs shrink-0 bg-card-muted dark:bg-card-muted-dark border border-gray-200 dark:border-white/10 rounded-lg p-3 max-h-full"
           ref={provided.innerRef}
           {...provided.draggableProps}
         >
@@ -38,7 +38,7 @@ export function Column({ id, title, tasks, index, onEdit, onDelete }: ColumnProp
               </Badge>
             </div>
 
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
               <Button variant="ghost" size="tinyIcon" onClick={() => onEdit(id, title)} title="Edit Column" aria-label="Edit Column">
                 <Edit2 className="w-3 h-3 shrink-0" />
               </Button>

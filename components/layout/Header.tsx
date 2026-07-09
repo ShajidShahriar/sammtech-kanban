@@ -35,8 +35,8 @@ export function Header() {
   return (
     <header className="flex flex-col w-full shrink-0 bg-surface">
       <div className="flex items-center justify-between h-16 px-6 border-b border-outline">
-        <div className="flex-1 flex items-center gap-3">
-          <div className="w-full max-w-[130px] sm:max-w-xs relative">
+        <div className="tour-filters flex-1 flex items-center gap-3">
+          <div className="w-full max-w-32 sm:max-w-xs relative">
             <Input
               icon={<Search className="w-4 h-4" />}
               value={searchQuery}

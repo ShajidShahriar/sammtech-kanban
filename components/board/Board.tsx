@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Column } from './Column';
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import { useKanbanBoard } from '@/hooks/useKanbanBoard';
@@ -130,6 +130,62 @@ export function Board() {
     updateBoard(newBoard);
   };
 
+  // Custom auto-scroller for horizontal dragging (fixes known dnd issues)
+  useEffect(() => {
+    let animationFrameId: number;
+    let pointerX = 0;
+    let pointerY = 0;
+    let isPointerDown = false;
+    
+    const handlePointerDown = (e: PointerEvent) => { isPointerDown = true; };
+    const handlePointerUp = (e: PointerEvent) => { isPointerDown = false; };
+    
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!isPointerDown && e.buttons !== 1) return; // Only track when dragging/holding
+      pointerX = e.clientX;
+      pointerY = e.clientY;
+    };
+
+    const scrollLoop = () => {
+      if (scrollRef.current && (isPointerDown || pointerX > 0)) {
+        const rect = scrollRef.current.getBoundingClientRect();
+        // Only scroll if the pointer is vertically within the board area (roughly)
+        if (pointerY >= rect.top && pointerY <= rect.bottom) {
+          const threshold = 120; // 120px from edge
+          const maxSpeed = 20;
+          let scrollDelta = 0;
+          
+          if (pointerX > rect.right - threshold && pointerX <= rect.right + 50) {
+            // Scroll right
+            const intensity = Math.max(0, Math.min(1, (pointerX - (rect.right - threshold)) / threshold));
+            scrollDelta = intensity * maxSpeed;
+          } else if (pointerX < rect.left + threshold && pointerX >= rect.left - 50) {
+            // Scroll left
+            const intensity = Math.max(0, Math.min(1, ((rect.left + threshold) - pointerX) / threshold));
+            scrollDelta = -intensity * maxSpeed;
+          }
+          
+          if (scrollDelta !== 0) {
+            scrollRef.current.scrollBy({ left: scrollDelta });
+          }
+        }
+      }
+      animationFrameId = requestAnimationFrame(scrollLoop);
+    };
+
+    window.addEventListener('pointerdown', handlePointerDown);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointermove', handlePointerMove);
+    animationFrameId = requestAnimationFrame(scrollLoop);
+
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointermove', handlePointerMove);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
   if (!isLoaded) return <BoardSkeleton />;
 
   const editingTask = editingTaskId ? board.tasks.find(t => t.id === editingTaskId) : undefined;
@@ -143,6 +199,8 @@ export function Board() {
     setEditingColumn(undefined);
     setIsColumnModalOpen(true);
   };
+
+
 
   return (
     <>
@@ -160,7 +218,7 @@ export function Board() {
             {(provided) => (
               <div className="tour-drag-drop relative flex-1 overflow-hidden">
                 <div
-                  className="overflow-x-auto overflow-y-hidden p-6 h-full flex items-start gap-6 relative"
+                  className="overflow-auto p-6 h-full flex items-start gap-6 relative"
                   ref={(el) => {
                     provided.innerRef(el);
                     // Issue #8: Proper ref merge instead of @ts-ignore

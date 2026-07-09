@@ -1,7 +1,8 @@
 'use client';
 
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { Joyride, Step } from 'react-joyride';
+import { Joyride, Step, Placement } from 'react-joyride';
+import { useTheme } from '@/hooks/useTheme';
 
 interface TourContextType {
   startTour: () => void;
@@ -19,6 +20,7 @@ export function useTour() {
 
 export function TourProvider({ children }: { children: ReactNode }) {
   const [run, setRun] = useState(false);
+  const { isDark } = useTheme();
 
 
   const steps: Step[] = [
@@ -33,6 +35,7 @@ export function TourProvider({ children }: { children: ReactNode }) {
     {
       target: '.tour-filters',
       content: 'Use these powerful filters to quickly find tasks by label, priority, or assignee.',
+      placement: 'bottom' as Placement,
     },
     {
       target: '.tour-drag-drop',
@@ -64,7 +67,10 @@ export function TourProvider({ children }: { children: ReactNode }) {
         continuous
         onEvent={handleJoyrideCallback}
         options={{
-          primaryColor: '#000',
+          primaryColor: isDark ? '#ffffff' : '#000000',
+          backgroundColor: isDark ? '#1f2937' : '#ffffff',
+          textColor: isDark ? '#f9fafb' : '#111827',
+          arrowColor: isDark ? '#1f2937' : '#ffffff',
           zIndex: 10000,
         }}
       />
