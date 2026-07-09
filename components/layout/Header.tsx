@@ -1,7 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '../ui/Button';
-import { Undo2, Redo2, Moon, Sun, Plus, HelpCircle } from 'lucide-react';
+import { Undo2, Redo2, Moon, Sun, Plus, HelpCircle, Search, Filter } from 'lucide-react';
+import { Input } from '../ui/Input';
+import { FilterModal } from './FilterModal';
 import { useKanbanBoard } from '@/hooks/useKanbanBoard';
 import { useTheme } from '@/hooks/useTheme';
 import { useTour } from '@/components/TourProvider';
@@ -19,8 +22,12 @@ export function Header() {
     undo, 
     redo,
     canUndo,
-    canRedo
+    canRedo,
+    searchQuery,
+    setSearchQuery
   } = useKanbanBoard();
+  
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   
   const { isDark, toggle, mounted } = useTheme();
   const { startTour } = useTour();
@@ -28,7 +35,21 @@ export function Header() {
   return (
     <header className="flex flex-col w-full shrink-0 bg-surface">
       <div className="flex items-center justify-between h-16 px-6 border-b border-outline">
-        <div className="flex-1" /> {/* Spacer to push items to the right */}
+        <div className="flex-1 flex items-center gap-3">
+          <div className="w-full max-w-[130px] sm:max-w-xs relative">
+            <Input
+              icon={<Search className="w-4 h-4" />}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search tasks..."
+              aria-label="Search tasks"
+            />
+          </div>
+          <Button variant="ghost" onClick={() => setIsFilterModalOpen(true)} className="gap-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+            <Filter className="w-4 h-4" />
+            <span className="hidden sm:inline">Filters</span>
+          </Button>
+        </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 border-r border-outline pr-3">
             <Button variant="ghost" size="icon" onClick={undo} disabled={!canUndo} title="Undo (Ctrl/Cmd+Z)">
@@ -43,7 +64,7 @@ export function Header() {
               {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </Button>
           )}
-          <Button variant="ghost" onClick={startTour} className="gap-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+          <Button variant="ghost" onClick={startTour} className="hidden sm:flex gap-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
             <HelpCircle className="w-4 h-4" />
             <span className="hidden sm:inline">Tips</span>
           </Button>
@@ -54,7 +75,7 @@ export function Header() {
               setEditingColumn(undefined);
               setIsColumnModalOpen(true);
             }}
-            className="gap-2 ml-2 tour-add-column"
+            className="gap-2 ml-2 tour-add-column hidden sm:flex"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Add Column</span>
@@ -65,7 +86,7 @@ export function Header() {
               setEditingTaskId(null);
               setIsModalOpen(true);
             }}
-            className="gap-2 tour-add-task"
+            className="gap-2 tour-add-task hidden sm:flex"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Add Task</span>
@@ -76,6 +97,10 @@ export function Header() {
       {/* Horizontal Calendar */}
       <HorizontalCalendar /> 
 
+      <FilterModal 
+        isOpen={isFilterModalOpen} 
+        onClose={() => setIsFilterModalOpen(false)} 
+      />
     </header>
   );
 }

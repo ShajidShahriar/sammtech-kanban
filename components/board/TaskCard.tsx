@@ -32,7 +32,7 @@ export function TaskCard({ task, index }: TaskCardProps) {
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
-          className="touch-none"
+          className="group relative"
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           style={{ ...provided.draggableProps.style, opacity: snapshot.isDragging ? 0.8 : 1 }}

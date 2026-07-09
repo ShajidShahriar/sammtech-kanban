@@ -179,7 +179,7 @@ export function TaskModal({ isOpen, onClose, initialData, onSave, onDelete }: Ta
                 className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium rounded-md border border-gray-200 dark:border-white/20 bg-white dark:bg-black text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
               >
                 <Sparkles className="w-3.5 h-3.5 text-gray-900 dark:text-gray-100" />
-                Auto-generate
+                <span className="hidden sm:inline">Auto-generate</span>
               </button>
               <button 
                 type="button" 

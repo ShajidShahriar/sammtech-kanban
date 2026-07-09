@@ -41,6 +41,9 @@ export function TourProvider({ children }: { children: ReactNode }) {
   ];
 
   const startTour = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 640) {
+      return; // Disable on mobile
+    }
     setRun(true);
   };
 

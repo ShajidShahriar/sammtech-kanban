@@ -16,7 +16,7 @@ export function Navigation() {
   ];
 
   return (
-    <nav className="flex flex-col flex-1 w-full p-2 gap-2 mt-2">
+    <nav className="flex flex-row sm:flex-col flex-1 w-full px-2 sm:p-2 gap-2 mt-0 sm:mt-2 items-center justify-center sm:justify-start">
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         return (
@@ -36,7 +36,7 @@ export function Navigation() {
         );
       })}
 
-      <div className="flex-1" />
+      <div className="hidden sm:block flex-1" />
 
       <Link 
         href="/settings"

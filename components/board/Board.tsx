@@ -12,6 +12,7 @@ import { Plus, LayoutList, ChevronRight, ChevronLeft } from 'lucide-react';
 import { EmptyState } from '../ui/EmptyState';
 import { Button } from '../ui/Button';
 import { BoardSkeleton } from './BoardSkeleton';
+import { MobileFABs } from '../layout/MobileFABs';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -234,6 +235,8 @@ export function Board() {
           if (deletingColumnId) deleteColumn(deletingColumnId);
         }}
       />
+      
+      <MobileFABs />
     </>
   );
 }
