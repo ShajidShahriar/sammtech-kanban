@@ -6,7 +6,7 @@ A feature-rich, drag-and-drop Kanban board built with Next.js, TypeScript, and T
 
 1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/ShajidShahriar/sammtech-kanban
    cd sammtech-kanban
    ```
 
