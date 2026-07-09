@@ -1,9 +1,10 @@
 'use client';
 
 import { Button } from '../ui/Button';
-import { Undo2, Redo2, Moon, Sun, Plus } from 'lucide-react';
+import { Undo2, Redo2, Moon, Sun, Plus, HelpCircle } from 'lucide-react';
 import { useKanbanBoard } from '@/hooks/useKanbanBoard';
 import { useTheme } from '@/hooks/useTheme';
+import { useTour } from '@/components/TourProvider';
 import { motion } from 'framer-motion';
 import { HorizontalCalendar } from '../board/HorizontalCalendar';
 
@@ -22,6 +23,7 @@ export function Header() {
   } = useKanbanBoard();
   
   const { isDark, toggle, mounted } = useTheme();
+  const { startTour } = useTour();
 
   return (
     <header className="flex flex-col w-full shrink-0 bg-surface">
@@ -41,6 +43,10 @@ export function Header() {
               {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </Button>
           )}
+          <Button variant="ghost" onClick={startTour} className="gap-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+            <HelpCircle className="w-4 h-4" />
+            <span className="hidden sm:inline">Tips</span>
+          </Button>
           <MotionButton 
             layoutId="new-column"
             variant="secondary"
@@ -48,7 +54,7 @@ export function Header() {
               setEditingColumn(undefined);
               setIsColumnModalOpen(true);
             }}
-            className="gap-2 ml-2"
+            className="gap-2 ml-2 tour-add-column"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Add Column</span>
@@ -59,7 +65,7 @@ export function Header() {
               setEditingTaskId(null);
               setIsModalOpen(true);
             }}
-            className="gap-2"
+            className="gap-2 tour-add-task"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Add Task</span>

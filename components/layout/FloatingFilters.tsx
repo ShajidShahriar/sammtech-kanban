@@ -20,7 +20,7 @@ export function FloatingFilters() {
     <>{/*invisible triger at the bottom */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-3/5 max-w-3xl h-16 z-[49] peer" />
 
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 p-3 bg-surface/90 backdrop-blur-xl border border-outline rounded-2xl shadow-2xl overflow-x-auto max-w-[90vw] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] transform translate-y-32 opacity-0 hover:translate-y-0 hover:opacity-100 peer-hover:translate-y-0 peer-hover:opacity-100 transition-all duration-300">
+      <div className="tour-filters fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 p-3 bg-surface/90 backdrop-blur-xl border border-outline rounded-2xl shadow-2xl overflow-x-auto max-w-[90vw] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] transform translate-y-32 opacity-0 hover:translate-y-0 hover:opacity-100 peer-hover:translate-y-0 peer-hover:opacity-100 transition-all duration-300">
 
         <div className="w-48 shrink-0 relative">
           <Input

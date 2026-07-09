@@ -157,7 +157,7 @@ export function Board() {
         ) : (
           <Droppable droppableId="board-columns" direction="horizontal" type="column">
             {(provided) => (
-              <div className="relative flex-1 overflow-hidden">
+              <div className="tour-drag-drop relative flex-1 overflow-hidden">
                 <div
                   className="overflow-x-auto overflow-y-hidden p-6 h-full flex items-start gap-6 relative"
                   ref={(el) => {

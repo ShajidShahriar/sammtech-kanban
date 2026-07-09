@@ -24,33 +24,7 @@ export const DUMMY_USERS: Assignee[] = [
 ];
 
 export const initialBoardData: BoardData = {
-  columns: [
-    { id: 'Backlog', title: 'Backlog' },
-    { id: 'Todo', title: 'Todo' },
-    { id: 'In Progress', title: 'In Progress' },
-    { id: 'Review', title: 'Review' },
-    { id: 'Done', title: 'Done' },
-  ],
+  columns: [],
   labels: AVAILABLE_LABELS,
-  tasks: [
-    {
-      id: 'task-1',
-      title: 'Set up Next.js Project',
-      description: 'Initialize with App Router, TypeScript, and Tailwind.\n\n- Need to configure basic `globals.css`\n- Setup **ESLint** rules.',
-      status: 'Todo',
-      priority: 'High',
-      labels: [AVAILABLE_LABELS[0]],
-      assignee: DUMMY_USERS[0],
-      dueDate: relativeDateStr(3),
-    },
-    {
-      id: 'task-2',
-      title: 'Build UI Layout',
-      description: 'Create responsive flex layout for columns.',
-      status: 'In Progress',
-      priority: 'Medium',
-      labels: [AVAILABLE_LABELS[1]],
-      assignee: DUMMY_USERS[1],
-    }
-  ],
+  tasks: [],
 };

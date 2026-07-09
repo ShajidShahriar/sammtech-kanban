@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { KanbanProvider } from "@/hooks/useKanbanBoard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { TourProvider } from "@/components/TourProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,9 +29,11 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <body>
         <KanbanProvider>
-          <ErrorBoundary>
-            {children}
-          </ErrorBoundary>
+          <TourProvider>
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
+          </TourProvider>
         </KanbanProvider>
       </body>
     </html>
