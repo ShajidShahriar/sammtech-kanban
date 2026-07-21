@@ -1,6 +1,6 @@
-# Sammtech Kanban
+# Onward Kanban
 
-A feature-rich, drag-and-drop Kanban board built with Next.js, TypeScript, and Tailwind. This was my take-home for the Sammtech frontend assessment, built solo, with no starter template beyond the boilerplate I generated myself (more on that below).
+A feature-rich, drag-and-drop Kanban board built with Next.js, TypeScript, and Tailwind. This was my take-home for a frontend assessment, built solo, with no starter template beyond the boilerplate I generated myself (more on that below).
 
 ## Live Demo
 
